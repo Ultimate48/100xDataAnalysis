@@ -1,50 +1,56 @@
-let assignmentIdHeader;
+let assignmentId;
 
-fetch('https://one00x-data-analysis.onrender.com/assignment?email=adeesh.g47@gmail.com')
-  .then((res) => {
-    if (res.status === 200) {
-      assignmentIdHeader = res.headers.get('x-assignment-id');
-      return res.json();
-    } else {
-      throw new Error('Failed to fetch data');
-    }
-  })
-  .then((data) => {
-    const mostUsedWord = findMostUsedWord(data);
+function assignment() {
+  fetch('https://one00x-data-analysis.onrender.com/assignment?email=adeesh.g47@gmail.com')
+      .then((res) => {
+        if (res.status === 200) {
+          assignmentId = res.headers.get('x-assignment-id');
+          return res.json();
+        } else {
+          throw new Error('Failed to fetch data');
+        }
+      })
+      .then((data) => {
+        console.log(assignmentId);
 
-    const requestData = {
-      assignment_id: assignmentIdHeader, 
-      answer: mostUsedWord,
-    };
+        const mostUsedWord = findMostUsedWord(data);
 
-    return fetch('https://one00x-data-analysis.onrender.com/assignment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestData),
-    });
-  })
+        console.log(mostUsedWord)
 
-  .then((response) => {
-    if (response.status === 200) {
-      return response.json();
-    } else {
-      throw new Error('Failed to submit the answer');
-    }
-  })
+        const Data = {
+          assignment_id: assignmentId,
+          answer: mostUsedWord,
+        };
 
-  .then((data) => {
-    console.log( data);
-  })
-  
-  .catch((error) => {
-    if (error.message.includes('HTTP 500')) { // For 500 status code
-      console.error('Received HTTP 500 response. Please retry.');
-    } else {
-      console.error('Error:', error);
-    }
-  });
+        return fetch('https://one00x-data-analysis.onrender.com/assignment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(Data),
+        });
+      })
+
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw new Error('Failed to submit the answer');
+        }
+      })
+
+      .then((data) => {
+        console.log(data);
+      })
+
+      .catch((error) => {
+        if (error.message.includes('HTTP 500')) {
+          assignment()
+        } else {
+          console.log(error.message);
+        }
+      });
+}
 
 function findMostUsedWord(list) {
   const wordCount = {};
@@ -73,3 +79,5 @@ function findMostUsedWord(list) {
   }
   return mostUsedWord;
 }
+
+assignment();
